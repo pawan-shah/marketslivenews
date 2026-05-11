@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Trader Terminal Live</title>
+<title>Traders Terminal</title>
 
 <style>
 
@@ -139,7 +139,7 @@ body{
 <div class="header-inner">
 
 <div class="logo">
-Trader Terminal
+Traders Terminal
 </div>
 
 <div class="live">
@@ -153,7 +153,7 @@ LIVE • Auto updates every 10 seconds
 <main class="main">
 
 <div id="loading" class="loading">
-Loading latest trader news...
+Loading latest traders news...
 </div>
 
 <div id="news" class="grid"></div>
@@ -166,7 +166,6 @@ Real-time trader-critical market intelligence
 
 <script>
 
-// CLEAN TITLE
 function cleanTitle(title){
 
   if(title.includes(" - ")){
@@ -181,7 +180,6 @@ function cleanTitle(title){
 
 }
 
-// SOURCE NAME
 function getSourceName(title){
 
   if(title.includes(" - ")){
@@ -197,7 +195,6 @@ function getSourceName(title){
 
 }
 
-// TIME FORMAT
 function formatTime(dateString){
 
   const now = new Date();
@@ -239,27 +236,54 @@ async function fetchNews(){
     document.getElementById("loading").innerHTML =
       "Loading latest trader news...";
 
-    // FINANCE SPECIFIC FEED
     const rssUrl =
-      "https://news.google.com/rss/search?q=stock+market+crypto+bitcoin+federal+reserve+inflation+nasdaq+dow+jones+oil+prices&hl=en-US&gl=US&ceid=US:en";
+      "https://news.google.com/rss/search?q=stock+market+crypto+bitcoin+nasdaq+federal+reserve+inflation&hl=en-US&gl=US&ceid=US:en";
 
-    // RSS TO JSON
-    const api =
-      "https://api.rss2json.com/v1/api.json?rss_url="
-      + encodeURIComponent(rssUrl)
-      + "&count=100";
+    // PUBLIC CORS PROXY
+    const proxy =
+      "https://api.allorigins.win/raw?url=";
 
     const response =
-      await fetch(api);
+      await fetch(
+        proxy + encodeURIComponent(rssUrl)
+      );
 
-    const data =
-      await response.json();
+    const xml =
+      await response.text();
 
-    let items =
-      data.items || [];
+    const parser =
+      new DOMParser();
 
-    // SORT LATEST FIRST
-    items.sort((a,b)=>
+    const xmlDoc =
+      parser.parseFromString(xml,"text/xml");
+
+    const items =
+      xmlDoc.querySelectorAll("item");
+
+    let news = [];
+
+    items.forEach(item=>{
+
+      news.push({
+
+        title:
+          item.querySelector("title")
+          ?.textContent || "",
+
+        link:
+          item.querySelector("link")
+          ?.textContent || "",
+
+        pubDate:
+          item.querySelector("pubDate")
+          ?.textContent || ""
+
+      });
+
+    });
+
+    // SORT NEWEST FIRST
+    news.sort((a,b)=>
       new Date(b.pubDate) -
       new Date(a.pubDate)
     );
@@ -270,16 +294,15 @@ async function fetchNews(){
 
     const unique = [];
 
-    items.forEach(item=>{
+    news.forEach(item=>{
 
-      const title =
+      const key =
         cleanTitle(item.title)
-        .toLowerCase()
-        .trim();
+        .toLowerCase();
 
-      if(!seen.has(title)){
+      if(!seen.has(key)){
 
-        seen.add(title);
+        seen.add(key);
 
         unique.push(item);
 
@@ -287,11 +310,7 @@ async function fetchNews(){
 
     });
 
-    // MINIMUM 50 NEWS
-    const finalNews =
-      unique.slice(0,100);
-
-    renderNews(finalNews);
+    renderNews(unique.slice(0,100));
 
     document.getElementById("loading").innerHTML =
       "Showing latest trader-critical news";
@@ -301,7 +320,7 @@ async function fetchNews(){
     console.error(error);
 
     document.getElementById("loading").innerHTML =
-      "Failed to fetch latest trader news.";
+      "Failed to fetch latest news.";
 
   }
 
@@ -315,9 +334,6 @@ function renderNews(news){
   let html = "";
 
   news.forEach((item,index)=>{
-
-    const title =
-      cleanTitle(item.title);
 
     html += `
 
@@ -340,7 +356,7 @@ function renderNews(news){
         >
 
           <h2>
-            ${title}
+            ${cleanTitle(item.title)}
           </h2>
 
           <div class="publisher">
@@ -363,10 +379,8 @@ function renderNews(news){
 
 }
 
-// INITIAL LOAD
 fetchNews();
 
-// AUTO REFRESH EVERY 10 SECONDS
 setInterval(fetchNews,10000);
 
 </script>
