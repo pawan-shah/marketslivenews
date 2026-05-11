@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Markets Intelligence Dashboard</title>
+<title>Trader Terminal</title>
 
 <style>
 
@@ -16,6 +16,7 @@
   --text:#ffffff;
   --muted:#9ca3af;
   --accent:#16a34a;
+  --danger:#dc2626;
 }
 
 *{
@@ -46,7 +47,7 @@ body{
 }
 
 .logo{
-  font-size:28px;
+  font-size:30px;
   font-weight:700;
   margin-bottom:18px;
 }
@@ -173,6 +174,11 @@ body{
   margin-bottom:14px;
 }
 
+.breaking{
+  background:#3f1010;
+  color:#ffb4b4;
+}
+
 .footer{
   text-align:center;
   color:var(--muted);
@@ -199,7 +205,7 @@ body{
 <div class="header-inner">
 
 <div class="logo">
-Markets Intelligence
+Trader Terminal
 </div>
 
 <div class="search-wrap">
@@ -207,7 +213,7 @@ Markets Intelligence
 <input
 type="text"
 id="query"
-placeholder="Search market, economy or crypto news..."
+placeholder="Search trading news..."
 >
 
 <button onclick="loadNews(document.getElementById('query').value)">
@@ -218,36 +224,28 @@ Search
 
 <div class="topics">
 
-<button onclick="loadNews('global stock market')">
-Stock Market
+<button onclick="loadNews('stock market breaking news')">
+Markets
 </button>
 
-<button onclick="loadNews('crypto market bitcoin ethereum')">
+<button onclick="loadNews('bitcoin crypto breaking news')">
 Crypto
 </button>
 
-<button onclick="loadNews('global economy inflation recession')">
+<button onclick="loadNews('federal reserve breaking news')">
+Fed
+</button>
+
+<button onclick="loadNews('inflation recession breaking news')">
 Economy
 </button>
 
-<button onclick="loadNews('federal reserve interest rates')">
-Interest Rates
-</button>
-
-<button onclick="loadNews('oil prices global markets')">
+<button onclick="loadNews('oil prices breaking news')">
 Oil
 </button>
 
-<button onclick="loadNews('US China economy markets')">
-US-China
-</button>
-
-<button onclick="loadNews('AI companies stock market')">
-AI Stocks
-</button>
-
-<button onclick="loadNews('startup funding market')">
-Startups
+<button onclick="loadNews('nvidia apple tesla microsoft market news')">
+Big Tech
 </button>
 
 </div>
@@ -259,7 +257,7 @@ Startups
 <main class="main">
 
 <div id="status" class="status">
-Loading latest market intelligence...
+Loading trader news...
 </div>
 
 <div id="news" class="grid"></div>
@@ -267,14 +265,15 @@ Loading latest market intelligence...
 </main>
 
 <div class="footer">
-Live market, economy & crypto intelligence • Refreshes every 60 seconds
+Real-time trader-focused market intelligence • Auto refresh every 30 seconds
 </div>
 
 <script>
 
 let currentTopic =
-  "global stock market crypto economy";
+  "stock market crypto federal reserve inflation breaking news";
 
+// ENTER SEARCH
 document
 .getElementById("query")
 .addEventListener("keypress",function(event){
@@ -297,7 +296,7 @@ setInterval(()=>{
 
   loadNews(currentTopic);
 
-},60000);
+},30000);
 
 // CLEAN TITLE
 function cleanTitle(title){
@@ -314,7 +313,7 @@ function cleanTitle(title){
 
 }
 
-// SOURCE NAME
+// SOURCE
 function getSourceName(title){
 
   if(title.includes(" - ")){
@@ -346,9 +345,6 @@ function formatTime(dateString){
   const hours =
     Math.floor(minutes/60);
 
-  const days =
-    Math.floor(hours/24);
-
   if(minutes < 1){
     return "Just now";
   }
@@ -361,7 +357,7 @@ function formatTime(dateString){
     return hours + " hours ago";
   }
 
-  return days + " days ago";
+  return Math.floor(hours/24) + " days ago";
 
 }
 
@@ -372,18 +368,19 @@ async function loadNews(topic){
   currentTopic = topic;
 
   document.getElementById("status").innerHTML =
-    "Loading latest market intelligence...";
+    "Loading latest trader news...";
 
   try{
 
-    // BROADER MARKET + ECONOMY QUERY
-    const searchQuery =
+    // HIGH PRIORITY TRADER QUERY
+    const traderQuery =
       topic +
-      " stock market crypto economy inflation finance federal reserve";
+      " OR stock market OR crypto OR bitcoin OR federal reserve OR inflation OR recession OR interest rates OR oil prices";
 
     const rssUrl =
       "https://news.google.com/rss/search?q="
-      + encodeURIComponent(searchQuery);
+      + encodeURIComponent(traderQuery)
+      + "&hl=en-US&gl=US&ceid=US:en";
 
     const api =
       "https://api.rss2json.com/v1/api.json?rss_url="
@@ -395,7 +392,7 @@ async function loadNews(topic){
 
     const items = data.items || [];
 
-    // SORT NEWEST FIRST
+    // SORT BY NEWEST
     items.sort((a,b)=>
       new Date(b.pubDate) -
       new Date(a.pubDate)
@@ -406,7 +403,7 @@ async function loadNews(topic){
 
     let html = "";
 
-    items.slice(0,40).forEach(item=>{
+    items.slice(0,40).forEach((item,index)=>{
 
       const title =
         cleanTitle(item.title);
@@ -424,8 +421,18 @@ async function loadNews(topic){
 
         <article class="card">
 
-          <div class="badge">
-            LIVE MARKET UPDATE
+          <div class="badge ${
+            index < 5
+            ? 'breaking'
+            : ''
+          }">
+
+            ${
+              index < 5
+              ? 'BREAKING'
+              : 'MARKET UPDATE'
+            }
+
           </div>
 
           <a
@@ -458,14 +465,14 @@ async function loadNews(topic){
       html;
 
     document.getElementById("status").innerHTML =
-      "Showing latest results for: " + topic;
+      "Showing latest trader-critical news";
 
   }catch(error){
 
     console.error(error);
 
     document.getElementById("status").innerHTML =
-      "Failed to fetch latest market intelligence.";
+      "Failed to fetch trader news.";
 
   }
 
