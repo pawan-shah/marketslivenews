@@ -15,7 +15,6 @@
   --border:#1e1e1e;
   --text:#ffffff;
   --muted:#9ca3af;
-  --breaking:#dc2626;
 }
 
 *{
@@ -173,8 +172,6 @@ Real-time trader-critical market intelligence
 
 <script>
 
-let displayedNews = new Set();
-
 // CLEAN TITLE
 function cleanTitle(title){
 
@@ -222,6 +219,9 @@ function formatTime(dateString){
   const hours =
     Math.floor(minutes/60);
 
+  const days =
+    Math.floor(hours/24);
+
   if(minutes < 1){
     return "Just now";
   }
@@ -234,7 +234,7 @@ function formatTime(dateString){
     return hours + " hours ago";
   }
 
-  return null;
+  return days + " days ago";
 
 }
 
@@ -267,8 +267,8 @@ async function fetchNews(){
       new Date(a.pubDate)
     );
 
-    // REMOVE OLD NEWS (>24H)
-    items = items.filter(item=>{
+    // PRIORITIZE LATEST NEWS
+    const latestNews = items.filter(item=>{
 
       const diff =
         (new Date() - new Date(item.pubDate))
@@ -277,6 +277,27 @@ async function fetchNews(){
       return diff <= 24;
 
     });
+
+    // IF LESS THAN 50 NEWS,
+    // INCLUDE OLDER NEWS ALSO
+    if(latestNews.length >= 50){
+
+      items = latestNews;
+
+    }else{
+
+      items = items.filter(item=>{
+
+        const diff =
+          (new Date() - new Date(item.pubDate))
+          / 1000 / 60 / 60 / 24;
+
+        // MAX 30 DAYS OLD
+        return diff <= 30;
+
+      });
+
+    }
 
     // REMOVE DUPLICATES
     const unique = [];
@@ -322,12 +343,6 @@ function renderNews(news){
     const title =
       cleanTitle(item.title);
 
-    const time =
-      formatTime(item.pubDate);
-
-    // SKIP OLD NEWS
-    if(!time) return;
-
     html += `
 
       <article class="card">
@@ -359,7 +374,7 @@ function renderNews(news){
         </a>
 
         <div class="meta">
-          ${time}
+          ${formatTime(item.pubDate)}
         </div>
 
       </article>
