@@ -161,11 +161,12 @@ Loading latest traders news...
 </main>
 
 <div class="footer">
-Real-time trader-critical market intelligence
+Real-time traders market intelligence
 </div>
 
 <script>
 
+// CLEAN TITLE
 function cleanTitle(title){
 
   if(title.includes(" - ")){
@@ -180,6 +181,7 @@ function cleanTitle(title){
 
 }
 
+// SOURCE NAME
 function getSourceName(title){
 
   if(title.includes(" - ")){
@@ -195,6 +197,7 @@ function getSourceName(title){
 
 }
 
+// TIME FORMAT
 function formatTime(dateString){
 
   const now = new Date();
@@ -225,7 +228,11 @@ function formatTime(dateString){
     return hours + " hours ago";
   }
 
-  return days + " days ago";
+  if(days <= 30){
+    return days + " days ago";
+  }
+
+  return null;
 
 }
 
@@ -234,12 +241,11 @@ async function fetchNews(){
   try{
 
     document.getElementById("loading").innerHTML =
-      "Loading latest trader news...";
+      "Loading latest traders news...";
 
     const rssUrl =
       "https://news.google.com/rss/search?q=stock+market+crypto+bitcoin+nasdaq+federal+reserve+inflation&hl=en-US&gl=US&ceid=US:en";
 
-    // PUBLIC CORS PROXY
     const proxy =
       "https://api.allorigins.win/raw?url=";
 
@@ -310,10 +316,42 @@ async function fetchNews(){
 
     });
 
-    renderNews(unique.slice(0,100));
+    // STRICT LATEST NEWS
+    const latestOnly =
+      unique.filter(item=>{
+
+        const diffHours =
+          (new Date() - new Date(item.pubDate))
+          / 1000 / 60 / 60;
+
+        return diffHours <= 72;
+
+      });
+
+    let finalNews =
+      latestOnly;
+
+    // IF LESS THAN 50 NEWS,
+    // ALLOW UP TO 7 DAYS
+    if(finalNews.length < 50){
+
+      finalNews =
+        unique.filter(item=>{
+
+          const diffDays =
+            (new Date() - new Date(item.pubDate))
+            / 1000 / 60 / 60 / 24;
+
+          return diffDays <= 7;
+
+        });
+
+    }
+
+    renderNews(finalNews.slice(0,100));
 
     document.getElementById("loading").innerHTML =
-      "Showing latest trader-critical news";
+      "Showing latest traders market news";
 
   }catch(error){
 
@@ -334,6 +372,14 @@ function renderNews(news){
   let html = "";
 
   news.forEach((item,index)=>{
+
+    const title =
+      cleanTitle(item.title);
+
+    const time =
+      formatTime(item.pubDate);
+
+    if(!time) return;
 
     html += `
 
@@ -356,7 +402,7 @@ function renderNews(news){
         >
 
           <h2>
-            ${cleanTitle(item.title)}
+            ${title}
           </h2>
 
           <div class="publisher">
@@ -366,7 +412,7 @@ function renderNews(news){
         </a>
 
         <div class="meta">
-          ${formatTime(item.pubDate)}
+          ${time}
         </div>
 
       </article>
@@ -379,8 +425,10 @@ function renderNews(news){
 
 }
 
+// INITIAL LOAD
 fetchNews();
 
+// AUTO REFRESH EVERY 10 SECONDS
 setInterval(fetchNews,10000);
 
 </script>
