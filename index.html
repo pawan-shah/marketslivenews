@@ -161,7 +161,7 @@ body{
 
 }
 
-/* TV / LARGE SCREENS */
+/* TV / LARGE SCREEN */
 
 @media(min-width:1600px){
 
@@ -287,11 +287,11 @@ async function fetchNews(){
     document.getElementById("loading").innerHTML =
       "Loading latest traders market news...";
 
-    // BROAD MARKET FEED
+    // GOOGLE NEWS RSS
     const rssUrl =
       "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en";
 
-    // RELIABLE CORS PROXY
+    // CORS PROXY
     const proxy =
       "https://corsproxy.io/?";
 
@@ -314,59 +314,30 @@ async function fetchNews(){
 
     let news = [];
 
+    // PUSH ALL NEWS
     items.forEach(item=>{
 
       const title =
         item.querySelector("title")
         ?.textContent || "";
 
-      const lower =
-        title.toLowerCase();
+      news.push({
 
-      // TRADER FILTER
-      if(
+        title:title,
 
-        lower.includes("market") ||
-        lower.includes("stocks") ||
-        lower.includes("stock") ||
-        lower.includes("crypto") ||
-        lower.includes("bitcoin") ||
-        lower.includes("ethereum") ||
-        lower.includes("nasdaq") ||
-        lower.includes("dow") ||
-        lower.includes("s&p") ||
-        lower.includes("inflation") ||
-        lower.includes("federal reserve") ||
-        lower.includes("interest rate") ||
-        lower.includes("economy") ||
-        lower.includes("oil") ||
-        lower.includes("nvidia") ||
-        lower.includes("tesla") ||
-        lower.includes("apple") ||
-        lower.includes("microsoft") ||
-        lower.includes("amazon")
+        link:
+          item.querySelector("link")
+          ?.textContent || "",
 
-      ){
+        pubDate:
+          item.querySelector("pubDate")
+          ?.textContent || ""
 
-        news.push({
-
-          title:title,
-
-          link:
-            item.querySelector("link")
-            ?.textContent || "",
-
-          pubDate:
-            item.querySelector("pubDate")
-            ?.textContent || ""
-
-        });
-
-      }
+      });
 
     });
 
-    // SORT LATEST FIRST
+    // SORT NEWEST FIRST
     news.sort((a,b)=>
       new Date(b.pubDate) -
       new Date(a.pubDate)
@@ -394,7 +365,7 @@ async function fetchNews(){
 
     });
 
-    // STRICT LATEST FILTER
+    // LATEST NEWS FIRST
     let latestOnly =
       unique.filter(item=>{
 
@@ -456,6 +427,7 @@ function renderNews(news){
     const time =
       formatTime(item.pubDate);
 
+    // SKIP VERY OLD NEWS
     if(!time) return;
 
     html += `
