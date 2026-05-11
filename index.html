@@ -1,3 +1,8 @@
+# Traders Terminal — Stable Live Market Dashboard
+
+Save the following as `index.html` and upload it to your GitHub repository.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -44,7 +49,7 @@ body{
 }
 
 .logo{
-  font-size:30px;
+  font-size:32px;
   font-weight:800;
 }
 
@@ -129,6 +134,14 @@ body{
   margin-top:40px;
 }
 
+@media(max-width:768px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+}
+
 </style>
 </head>
 
@@ -153,7 +166,7 @@ LIVE • Auto updates every 10 seconds
 <main class="main">
 
 <div id="loading" class="loading">
-Loading latest traders news...
+Loading latest traders market news...
 </div>
 
 <div id="news" class="grid"></div>
@@ -201,7 +214,6 @@ function getSourceName(title){
 function formatTime(dateString){
 
   const now = new Date();
-
   const date = new Date(dateString);
 
   const seconds =
@@ -228,7 +240,7 @@ function formatTime(dateString){
     return hours + " hours ago";
   }
 
-  if(days <= 30){
+  if(days <= 7){
     return days + " days ago";
   }
 
@@ -241,11 +253,13 @@ async function fetchNews(){
   try{
 
     document.getElementById("loading").innerHTML =
-      "Loading latest traders news...";
+      "Loading latest traders market news...";
 
+    // BROAD RELIABLE FEED
     const rssUrl =
-      "https://news.google.com/rss/search?q=stock+market+crypto+bitcoin+nasdaq+federal+reserve+inflation&hl=en-US&gl=US&ceid=US:en";
+      "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en";
 
+    // PUBLIC PROXY
     const proxy =
       "https://api.allorigins.win/raw?url=";
 
@@ -270,21 +284,51 @@ async function fetchNews(){
 
     items.forEach(item=>{
 
-      news.push({
+      const title =
+        item.querySelector("title")
+        ?.textContent || "";
 
-        title:
-          item.querySelector("title")
-          ?.textContent || "",
+      const lower =
+        title.toLowerCase();
 
-        link:
-          item.querySelector("link")
-          ?.textContent || "",
+      // TRADER FILTER
+      if(
+        lower.includes("market") ||
+        lower.includes("stocks") ||
+        lower.includes("stock") ||
+        lower.includes("crypto") ||
+        lower.includes("bitcoin") ||
+        lower.includes("ethereum") ||
+        lower.includes("nasdaq") ||
+        lower.includes("dow") ||
+        lower.includes("s&p") ||
+        lower.includes("inflation") ||
+        lower.includes("federal reserve") ||
+        lower.includes("interest rate") ||
+        lower.includes("economy") ||
+        lower.includes("oil") ||
+        lower.includes("nvidia") ||
+        lower.includes("tesla") ||
+        lower.includes("apple") ||
+        lower.includes("microsoft") ||
+        lower.includes("amazon")
+      ){
 
-        pubDate:
-          item.querySelector("pubDate")
-          ?.textContent || ""
+        news.push({
 
-      });
+          title:title,
+
+          link:
+            item.querySelector("link")
+            ?.textContent || "",
+
+          pubDate:
+            item.querySelector("pubDate")
+            ?.textContent || ""
+
+        });
+
+      }
 
     });
 
@@ -295,8 +339,7 @@ async function fetchNews(){
     );
 
     // REMOVE DUPLICATES
-    const seen =
-      new Set();
+    const seen = new Set();
 
     const unique = [];
 
@@ -304,7 +347,8 @@ async function fetchNews(){
 
       const key =
         cleanTitle(item.title)
-        .toLowerCase();
+        .toLowerCase()
+        .trim();
 
       if(!seen.has(key)){
 
@@ -316,39 +360,34 @@ async function fetchNews(){
 
     });
 
-    // STRICT LATEST NEWS
-    const latestOnly =
-      unique.filter(item=>{
+    // LATEST NEWS PRIORITY
+    let latestOnly = unique.filter(item=>{
 
-        const diffHours =
+      const diffHours =
+        (new Date() - new Date(item.pubDate))
+        / 1000 / 60 / 60;
+
+      return diffHours <= 72;
+
+    });
+
+    // IF TOO FEW ARTICLES,
+    // ALLOW UP TO 7 DAYS
+    if(latestOnly.length < 50){
+
+      latestOnly = unique.filter(item=>{
+
+        const diffDays =
           (new Date() - new Date(item.pubDate))
-          / 1000 / 60 / 60;
+          / 1000 / 60 / 60 / 24;
 
-        return diffHours <= 72;
+        return diffDays <= 7;
 
       });
 
-    let finalNews =
-      latestOnly;
-
-    // IF LESS THAN 50 NEWS,
-    // ALLOW UP TO 7 DAYS
-    if(finalNews.length < 50){
-
-      finalNews =
-        unique.filter(item=>{
-
-          const diffDays =
-            (new Date() - new Date(item.pubDate))
-            / 1000 / 60 / 60 / 24;
-
-          return diffDays <= 7;
-
-        });
-
     }
 
-    renderNews(finalNews.slice(0,100));
+    renderNews(latestOnly.slice(0,100));
 
     document.getElementById("loading").innerHTML =
       "Showing latest traders market news";
@@ -435,3 +474,11 @@ setInterval(fetchNews,10000);
 
 </body>
 </html>
+```
+
+Then:
+
+1. Rename file to `index.html`
+2. Upload to GitHub repository root
+3. Wait 1–2 minutes
+4. Open your GitHub Pages link
