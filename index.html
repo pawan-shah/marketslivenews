@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Markets Dashboard</title>
+
+<style>
+
+:root{
+  --bg:#0a0a0a;
+  --card:#111111;
+  --border:#1e1e1e;
+  --text:#ffffff;
+  --muted:#9ca3af;
+  --accent:#16a34a;
+  --crypto:#f59e0b;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(10,10,10,0.95);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+
+.header-inner{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+.logo{
+  font-size:30px;
+  font-weight:700;
+  margin-bottom:18px;
+}
+
+.tabs{
+  display:flex;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.tabs button{
+  border:none;
+  color:white;
+  padding:12px 18px;
+  border-radius:999px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.stock-btn{
+  background:var(--accent);
+}
+
+.crypto-btn{
+  background:var(--crypto);
+}
+
+.search-wrap{
+  display:flex;
+  gap:10px;
+}
+
+.search-wrap input{
+  flex:1;
+  background:#111;
+  border:1px solid var(--border);
+  color:white;
+  padding:15px 18px;
+  border-radius:12px;
+  font-size:16px;
+  outline:none;
+}
+
+.search-wrap input:focus{
+  border-color:#333;
+}
+
+.search-wrap button{
+  background:#2563eb;
+  border:none;
+  color:white;
+  padding:15px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:15px;
+  font-weight:600;
+}
+
+.main{
+  max-width:1200px;
+  margin:auto;
+  padding:25px 20px 50px;
+}
+
+.status{
+  color:var(--muted);
+  margin-bottom:20px;
+}
+
+.hero{
+  background:linear-gradient(180deg,#131313,#0f0f0f);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px;
+  margin-bottom:25px;
+}
+
+.badge{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:999px;
+  font-size:12px;
+  margin-bottom:16px;
+  background:#1f2937;
+  color:#93c5fd;
+}
+
+.hero-link{
+  color:white;
+  text-decoration:none;
+  display:block;
+}
+
+.hero-link:hover h1{
+  color:#60a5fa;
+}
+
+.hero h1{
+  font-size:34px;
+  line-height:1.4;
+  margin-bottom:10px;
+}
+
+.publisher{
+  color:var(--muted);
+  margin-bottom:12px;
+}
+
+.meta{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:18px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+  border-color:#2b2b2b;
+}
+
+.headline-link{
+  color:white;
+  text-decoration:none;
+  display:block;
+}
+
+.headline-link:hover h2{
+  color:#60a5fa;
+}
+
+.card h2{
+  font-size:22px;
+  line-height:1.5;
+  margin-bottom:10px;
+}
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  padding:40px 20px;
+  border-top:1px solid var(--border);
+  margin-top:40px;
+}
+
+@media(max-width:768px){
+
+  .hero h1{
+    font-size:28px;
+  }
+
+  .search-wrap{
+    flex-direction:column;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+<div class="header-inner">
+
+<div class="logo">
+Markets Dashboard
+</div>
+
+<div class="tabs">
+
+<button
+class="stock-btn"
+onclick="loadNews('stock market')"
+>
+Stock Market
+</button>
+
+<button
+class="crypto-btn"
+onclick="loadNews('crypto market')"
+>
+Crypto Market
+</button>
+
+</div>
+
+<div class="search-wrap">
+
+<input
+type="text"
+id="query"
+placeholder="Search stocks or crypto news..."
+>
+
+<button onclick="loadNews(document.getElementById('query').value)">
+Search
+</button>
+
+</div>
+
+</div>
+
+</header>
+
+<main class="main">
+
+<div id="status" class="status">
+Loading latest market news...
+</div>
+
+<div id="hero"></div>
+
+<div id="news" class="grid"></div>
+
+</main>
+
+<div class="footer">
+Live market updates • Auto-refresh every 60 seconds
+</div>
+
+<script>
+
+let currentTopic = "stock market";
+
+// ENTER SEARCH
+document
+.getElementById("query")
+.addEventListener("keypress",function(event){
+
+  if(event.key === "Enter"){
+
+    loadNews(
+      document.getElementById("query").value
+    );
+
+  }
+
+});
+
+// INITIAL LOAD
+loadNews(currentTopic);
+
+// AUTO REFRESH
+setInterval(()=>{
+
+  loadNews(currentTopic);
+
+},60000);
+
+// CLEAN TITLE
+function cleanTitle(title){
+
+  if(title.includes(" - ")){
+
+    return title
+      .split(" - ")[0]
+      .trim();
+
+  }
+
+  return title;
+
+}
+
+// SOURCE NAME
+function getSourceName(title){
+
+  if(title.includes(" - ")){
+
+    return "- " + title
+      .split(" - ")
+      .pop()
+      .trim();
+
+  }
+
+  return "";
+
+}
+
+// TIME FORMAT
+function formatTime(dateString){
+
+  const now = new Date();
+  const date = new Date(dateString);
+
+  const seconds =
+    Math.floor((now - date)/1000);
+
+  const minutes =
+    Math.floor(seconds/60);
+
+  const hours =
+    Math.floor(minutes/60);
+
+  const days =
+    Math.floor(hours/24);
+
+  if(minutes < 1){
+    return "Just now";
+  }
+
+  if(minutes < 60){
+    return minutes + " minutes ago";
+  }
+
+  if(hours < 24){
+    return hours + " hours ago";
+  }
+
+  return days + " days ago";
+
+}
+
+async function loadNews(topic){
+
+  if(!topic) return;
+
+  currentTopic = topic;
+
+  document.getElementById("status").innerHTML =
+    "Loading latest market news...";
+
+  try{
+
+    const rssUrl =
+      "https://news.google.com/rss/search?q="
+      + encodeURIComponent(topic);
+
+    const api =
+      "https://api.rss2json.com/v1/api.json?rss_url="
+      + encodeURIComponent(rssUrl);
+
+    const response = await fetch(api);
+
+    const data = await response.json();
+
+    const items = data.items || [];
+
+    items.sort((a,b)=>
+      new Date(b.pubDate) -
+      new Date(a.pubDate)
+    );
+
+    if(items.length === 0){
+
+      document.getElementById("status").innerHTML =
+        "No latest news found.";
+
+      return;
+
+    }
+
+    // HERO
+    const hero = items[0];
+
+    document.getElementById("hero").innerHTML = `
+
+      <section class="hero">
+
+        <div class="badge">
+          LIVE MARKET UPDATE
+        </div>
+
+        <a
+          href="${hero.link}"
+          target="_blank"
+          class="hero-link"
+        >
+
+          <h1>
+            ${cleanTitle(hero.title)}
+          </h1>
+
+          <div class="publisher">
+            ${getSourceName(hero.title)}
+          </div>
+
+        </a>
+
+        <div class="meta">
+          ${formatTime(hero.pubDate)}
+        </div>
+
+      </section>
+
+    `;
+
+    // REMOVE DUPLICATES
+    const seen = new Set();
+
+    let html = "";
+
+    items.slice(1,25).forEach(item=>{
+
+      const title =
+        cleanTitle(item.title);
+
+      const key =
+        title.toLowerCase().trim();
+
+      if(
+        seen.has(key) ||
+        item.link === hero.link
+      ){
+        return;
+      }
+
+      seen.add(key);
+
+      html += `
+
+        <article class="card">
+
+          <a
+            href="${item.link}"
+            target="_blank"
+            class="headline-link"
+          >
+
+            <h2>
+              ${title}
+            </h2>
+
+            <div class="publisher">
+              ${getSourceName(item.title)}
+            </div>
+
+          </a>
+
+          <div class="meta">
+            ${formatTime(item.pubDate)}
+          </div>
+
+        </article>
+
+      `;
+
+    });
+
+    document.getElementById("news").innerHTML =
+      html;
+
+    document.getElementById("status").innerHTML =
+      "Showing latest results for: " + topic;
+
+  }catch(error){
+
+    console.error(error);
+
+    document.getElementById("status").innerHTML =
+      "Failed to fetch latest market news.";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
