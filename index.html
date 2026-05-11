@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Traders Terminal Live</title>
+<title>Trader Terminal Live</title>
 
 <style>
 
@@ -26,15 +25,14 @@
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:Inter,Arial,sans-serif;
+  font-family:Arial,sans-serif;
 }
 
 .header{
   position:sticky;
   top:0;
   z-index:1000;
-  background:rgba(5,5,5,0.97);
-  backdrop-filter:blur(12px);
+  background:#080808;
   border-bottom:1px solid var(--border);
 }
 
@@ -72,8 +70,7 @@ body{
   border:1px solid var(--border);
   border-radius:16px;
   padding:18px;
-  transition:0.25s;
-  animation:fadeIn 0.4s ease;
+  transition:0.2s;
 }
 
 .card:hover{
@@ -117,26 +114,17 @@ body{
   font-size:13px;
 }
 
+.loading{
+  color:var(--muted);
+  margin-bottom:20px;
+}
+
 .footer{
   text-align:center;
   color:var(--muted);
   padding:35px 20px;
   border-top:1px solid var(--border);
   margin-top:40px;
-}
-
-@keyframes fadeIn{
-
-  from{
-    opacity:0;
-    transform:translateY(8px);
-  }
-
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-
 }
 
 </style>
@@ -149,7 +137,7 @@ body{
 <div class="header-inner">
 
 <div class="logo">
-Traders Terminal Live
+Trader Terminal
 </div>
 
 <div class="live">
@@ -162,12 +150,16 @@ LIVE • Auto updates every 10 seconds
 
 <main class="main">
 
+<div id="loading" class="loading">
+Loading latest trader news...
+</div>
+
 <div id="news" class="grid"></div>
 
 </main>
 
 <div class="footer">
-Real-time traders-critical market intelligence
+Real-time trader-critical market intelligence
 </div>
 
 <script>
@@ -207,7 +199,6 @@ function getSourceName(title){
 function formatTime(dateString){
 
   const now = new Date();
-
   const date = new Date(dateString);
 
   const seconds =
@@ -242,67 +233,64 @@ async function fetchNews(){
 
   try{
 
-    // STRICT TRADER NEWS QUERY
-    const query =
-      "stock market OR crypto OR bitcoin OR federal reserve OR inflation OR recession OR interest rates OR oil prices OR Nasdaq OR S&P 500 OR Dow Jones";
+    document.getElementById("loading").innerHTML =
+      "Loading latest trader news...";
 
+    // WORKING RSS FEED
     const rssUrl =
-      "https://news.google.com/rss/search?q="
-      + encodeURIComponent(query)
-      + "&hl=en-US&gl=US&ceid=US:en";
+      "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en";
 
     const api =
       "https://api.rss2json.com/v1/api.json?rss_url="
       + encodeURIComponent(rssUrl);
 
-    const response = await fetch(api);
+    const response =
+      await fetch(api);
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    let items = data.items || [];
+    let items =
+      data.items || [];
 
-    // SORT NEWEST FIRST
+    // FILTER ONLY MARKET RELATED NEWS
+    items = items.filter(item=>{
+
+      const text =
+        item.title.toLowerCase();
+
+      return (
+        text.includes("stock") ||
+        text.includes("market") ||
+        text.includes("crypto") ||
+        text.includes("bitcoin") ||
+        text.includes("ethereum") ||
+        text.includes("nasdaq") ||
+        text.includes("dow") ||
+        text.includes("s&p") ||
+        text.includes("federal reserve") ||
+        text.includes("inflation") ||
+        text.includes("interest rate") ||
+        text.includes("economy") ||
+        text.includes("oil") ||
+        text.includes("tesla") ||
+        text.includes("nvidia") ||
+        text.includes("apple")
+      );
+
+    });
+
+    // SORT LATEST FIRST
     items.sort((a,b)=>
       new Date(b.pubDate) -
       new Date(a.pubDate)
     );
 
-    // PRIORITIZE LATEST NEWS
-    const latestNews = items.filter(item=>{
-
-      const diff =
-        (new Date() - new Date(item.pubDate))
-        / 1000 / 60 / 60;
-
-      return diff <= 24;
-
-    });
-
-    // IF LESS THAN 50 NEWS,
-    // INCLUDE OLDER NEWS ALSO
-    if(latestNews.length >= 50){
-
-      items = latestNews;
-
-    }else{
-
-      items = items.filter(item=>{
-
-        const diff =
-          (new Date() - new Date(item.pubDate))
-          / 1000 / 60 / 60 / 24;
-
-        // MAX 30 DAYS OLD
-        return diff <= 30;
-
-      });
-
-    }
-
     // REMOVE DUPLICATES
-    const unique = [];
+    const seen =
+      new Set();
 
-    const seen = new Set();
+    const unique = [];
 
     items.forEach(item=>{
 
@@ -321,11 +309,21 @@ async function fetchNews(){
 
     });
 
-    renderNews(unique.slice(0,100));
+    // MINIMUM 50 NEWS
+    const finalNews =
+      unique.slice(0,100);
+
+    renderNews(finalNews);
+
+    document.getElementById("loading").innerHTML =
+      "Showing latest trader-critical news";
 
   }catch(error){
 
     console.error(error);
+
+    document.getElementById("loading").innerHTML =
+      "Failed to fetch news.";
 
   }
 
@@ -390,7 +388,7 @@ function renderNews(news){
 // INITIAL LOAD
 fetchNews();
 
-// AUTO REFRESH EVERY 10 SECONDS
+// AUTO REFRESH
 setInterval(fetchNews,10000);
 
 </script>
