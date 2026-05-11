@@ -1,8 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -28,6 +28,7 @@ body{
   background:var(--bg);
   color:var(--text);
   font-family:Arial,sans-serif;
+  overflow-x:hidden;
 }
 
 .header{
@@ -39,13 +40,13 @@ body{
 }
 
 .header-inner{
-  max-width:1400px;
+  max-width:1600px;
   margin:auto;
   padding:18px 20px;
 }
 
 .logo{
-  font-size:32px;
+  font-size:34px;
   font-weight:800;
 }
 
@@ -56,7 +57,7 @@ body{
 }
 
 .main{
-  max-width:1400px;
+  max-width:1600px;
   margin:auto;
   padding:20px;
 }
@@ -69,7 +70,8 @@ body{
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  grid-template-columns:
+  repeat(auto-fit,minmax(320px,1fr));
   gap:14px;
 }
 
@@ -130,15 +132,48 @@ body{
   margin-top:40px;
 }
 
+/* MOBILE */
+
 @media(max-width:768px){
+
+  .logo{
+    font-size:28px;
+  }
 
   .grid{
     grid-template-columns:1fr;
   }
 
+  .card h2{
+    font-size:18px;
+  }
+
+}
+
+/* TABLET */
+
+@media(min-width:769px) and (max-width:1200px){
+
+  .grid{
+    grid-template-columns:
+    repeat(2,1fr);
+  }
+
+}
+
+/* TV / LARGE SCREENS */
+
+@media(min-width:1600px){
+
+  .grid{
+    grid-template-columns:
+    repeat(4,1fr);
+  }
+
 }
 
 </style>
+
 </head>
 
 <body>
@@ -210,6 +245,7 @@ function getSourceName(title){
 function formatTime(dateString){
 
   const now = new Date();
+
   const date = new Date(dateString);
 
   const seconds =
@@ -251,13 +287,13 @@ async function fetchNews(){
     document.getElementById("loading").innerHTML =
       "Loading latest traders market news...";
 
-    // BROAD RELIABLE FEED
+    // BROAD MARKET FEED
     const rssUrl =
       "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en";
 
-    // PUBLIC PROXY
+    // RELIABLE CORS PROXY
     const proxy =
-      "https://api.allorigins.win/raw?url=";
+      "https://corsproxy.io/?";
 
     const response =
       await fetch(
@@ -289,6 +325,7 @@ async function fetchNews(){
 
       // TRADER FILTER
       if(
+
         lower.includes("market") ||
         lower.includes("stocks") ||
         lower.includes("stock") ||
@@ -308,6 +345,7 @@ async function fetchNews(){
         lower.includes("apple") ||
         lower.includes("microsoft") ||
         lower.includes("amazon")
+
       ){
 
         news.push({
@@ -328,7 +366,7 @@ async function fetchNews(){
 
     });
 
-    // SORT NEWEST FIRST
+    // SORT LATEST FIRST
     news.sort((a,b)=>
       new Date(b.pubDate) -
       new Date(a.pubDate)
@@ -356,34 +394,38 @@ async function fetchNews(){
 
     });
 
-    // LATEST NEWS PRIORITY
-    let latestOnly = unique.filter(item=>{
+    // STRICT LATEST FILTER
+    let latestOnly =
+      unique.filter(item=>{
 
-      const diffHours =
-        (new Date() - new Date(item.pubDate))
-        / 1000 / 60 / 60;
-
-      return diffHours <= 72;
-
-    });
-
-    // IF TOO FEW ARTICLES,
-    // ALLOW UP TO 7 DAYS
-    if(latestOnly.length < 50){
-
-      latestOnly = unique.filter(item=>{
-
-        const diffDays =
+        const diffHours =
           (new Date() - new Date(item.pubDate))
-          / 1000 / 60 / 60 / 24;
+          / 1000 / 60 / 60;
 
-        return diffDays <= 7;
+        return diffHours <= 72;
 
       });
 
+    // IF LESS THAN 50 NEWS,
+    // ALLOW UP TO 7 DAYS
+    if(latestOnly.length < 50){
+
+      latestOnly =
+        unique.filter(item=>{
+
+          const diffDays =
+            (new Date() - new Date(item.pubDate))
+            / 1000 / 60 / 60 / 24;
+
+          return diffDays <= 7;
+
+        });
+
     }
 
-    renderNews(latestOnly.slice(0,100));
+    renderNews(
+      latestOnly.slice(0,100)
+    );
 
     document.getElementById("loading").innerHTML =
       "Showing latest traders market news";
@@ -470,11 +512,3 @@ setInterval(fetchNews,10000);
 
 </body>
 </html>
-```
-
-Then:
-
-1. Rename file to `index.html`
-2. Upload to GitHub repository root
-3. Wait 1–2 minutes
-4. Open your GitHub Pages link
