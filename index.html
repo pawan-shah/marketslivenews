@@ -5,18 +5,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Trader Terminal</title>
+<title>Trader Terminal Live</title>
 
 <style>
 
 :root{
-  --bg:#0a0a0a;
-  --card:#111111;
+  --bg:#050505;
+  --card:#101010;
   --border:#1e1e1e;
   --text:#ffffff;
   --muted:#9ca3af;
-  --accent:#16a34a;
-  --danger:#dc2626;
+  --breaking:#dc2626;
 }
 
 *{
@@ -35,112 +34,67 @@ body{
   position:sticky;
   top:0;
   z-index:1000;
-  background:rgba(10,10,10,0.96);
-  backdrop-filter:blur(10px);
+  background:rgba(5,5,5,0.97);
+  backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
 }
 
 .header-inner{
-  max-width:1200px;
+  max-width:1400px;
   margin:auto;
-  padding:18px;
+  padding:18px 20px;
 }
 
 .logo{
   font-size:30px;
-  font-weight:700;
-  margin-bottom:18px;
+  font-weight:800;
 }
 
-.search-wrap{
-  display:flex;
-  gap:10px;
-  margin-bottom:16px;
-}
-
-.search-wrap input{
-  flex:1;
-  background:#111;
-  border:1px solid var(--border);
-  color:white;
-  padding:14px 16px;
-  border-radius:12px;
-  font-size:15px;
-  outline:none;
-}
-
-.search-wrap button{
-  background:#2563eb;
-  border:none;
-  color:white;
-  padding:14px 18px;
-  border-radius:12px;
-  cursor:pointer;
+.live{
+  color:#ff4d4d;
   font-size:14px;
-  font-weight:600;
-}
-
-.topics{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  scrollbar-width:none;
-}
-
-.topics::-webkit-scrollbar{
-  display:none;
-}
-
-.topics button{
-  background:#131313;
-  border:1px solid var(--border);
-  color:white;
-  padding:10px 14px;
-  border-radius:999px;
-  cursor:pointer;
-  white-space:nowrap;
-  font-size:13px;
-}
-
-.topics button:hover{
-  border-color:#333;
+  margin-top:6px;
 }
 
 .main{
-  max-width:1200px;
+  max-width:1400px;
   margin:auto;
   padding:20px;
-}
-
-.status{
-  color:var(--muted);
-  margin-bottom:20px;
-  font-size:14px;
 }
 
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:16px;
+  gap:14px;
 }
 
 .card{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:16px;
-  padding:20px;
-  transition:0.2s;
+  padding:18px;
+  transition:0.25s;
+  animation:fadeIn 0.4s ease;
 }
 
 .card:hover{
+  border-color:#333;
   transform:translateY(-2px);
-  border-color:#2c2c2c;
+}
+
+.badge{
+  display:inline-block;
+  background:#2b0c0c;
+  color:#ffb4b4;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  margin-bottom:12px;
 }
 
 .headline-link{
   text-decoration:none;
   color:white;
-  display:block;
 }
 
 .headline-link:hover h2{
@@ -148,7 +102,7 @@ body{
 }
 
 .card h2{
-  font-size:21px;
+  font-size:20px;
   line-height:1.5;
   margin-bottom:10px;
 }
@@ -156,7 +110,7 @@ body{
 .publisher{
   color:var(--muted);
   font-size:14px;
-  margin-bottom:14px;
+  margin-bottom:12px;
 }
 
 .meta{
@@ -164,33 +118,24 @@ body{
   font-size:13px;
 }
 
-.badge{
-  display:inline-block;
-  background:#1f2937;
-  color:#93c5fd;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:11px;
-  margin-bottom:14px;
-}
-
-.breaking{
-  background:#3f1010;
-  color:#ffb4b4;
-}
-
 .footer{
   text-align:center;
   color:var(--muted);
-  padding:40px 20px;
+  padding:35px 20px;
   border-top:1px solid var(--border);
   margin-top:40px;
 }
 
-@media(max-width:768px){
+@keyframes fadeIn{
 
-  .search-wrap{
-    flex-direction:column;
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
   }
 
 }
@@ -208,46 +153,8 @@ body{
 Trader Terminal
 </div>
 
-<div class="search-wrap">
-
-<input
-type="text"
-id="query"
-placeholder="Search trading news..."
->
-
-<button onclick="loadNews(document.getElementById('query').value)">
-Search
-</button>
-
-</div>
-
-<div class="topics">
-
-<button onclick="loadNews('stock market breaking news')">
-Markets
-</button>
-
-<button onclick="loadNews('bitcoin crypto breaking news')">
-Crypto
-</button>
-
-<button onclick="loadNews('federal reserve breaking news')">
-Fed
-</button>
-
-<button onclick="loadNews('inflation recession breaking news')">
-Economy
-</button>
-
-<button onclick="loadNews('oil prices breaking news')">
-Oil
-</button>
-
-<button onclick="loadNews('nvidia apple tesla microsoft market news')">
-Big Tech
-</button>
-
+<div class="live">
+LIVE • Auto updates every 10 seconds
 </div>
 
 </div>
@@ -256,47 +163,17 @@ Big Tech
 
 <main class="main">
 
-<div id="status" class="status">
-Loading trader news...
-</div>
-
 <div id="news" class="grid"></div>
 
 </main>
 
 <div class="footer">
-Real-time trader-focused market intelligence • Auto refresh every 30 seconds
+Real-time trader-critical market intelligence
 </div>
 
 <script>
 
-let currentTopic =
-  "stock market crypto federal reserve inflation breaking news";
-
-// ENTER SEARCH
-document
-.getElementById("query")
-.addEventListener("keypress",function(event){
-
-  if(event.key === "Enter"){
-
-    loadNews(
-      document.getElementById("query").value
-    );
-
-  }
-
-});
-
-// INITIAL LOAD
-loadNews(currentTopic);
-
-// AUTO REFRESH
-setInterval(()=>{
-
-  loadNews(currentTopic);
-
-},30000);
+let displayedNews = new Set();
 
 // CLEAN TITLE
 function cleanTitle(title){
@@ -357,29 +234,21 @@ function formatTime(dateString){
     return hours + " hours ago";
   }
 
-  return Math.floor(hours/24) + " days ago";
+  return null;
 
 }
 
-async function loadNews(topic){
-
-  if(!topic) return;
-
-  currentTopic = topic;
-
-  document.getElementById("status").innerHTML =
-    "Loading latest trader news...";
+async function fetchNews(){
 
   try{
 
-    // HIGH PRIORITY TRADER QUERY
-    const traderQuery =
-      topic +
-      " OR stock market OR crypto OR bitcoin OR federal reserve OR inflation OR recession OR interest rates OR oil prices";
+    // STRICT TRADER NEWS QUERY
+    const query =
+      "stock market OR crypto OR bitcoin OR federal reserve OR inflation OR recession OR interest rates OR oil prices OR Nasdaq OR S&P 500 OR Dow Jones";
 
     const rssUrl =
       "https://news.google.com/rss/search?q="
-      + encodeURIComponent(traderQuery)
+      + encodeURIComponent(query)
       + "&hl=en-US&gl=US&ceid=US:en";
 
     const api =
@@ -390,93 +259,124 @@ async function loadNews(topic){
 
     const data = await response.json();
 
-    const items = data.items || [];
+    let items = data.items || [];
 
-    // SORT BY NEWEST
+    // SORT NEWEST FIRST
     items.sort((a,b)=>
       new Date(b.pubDate) -
       new Date(a.pubDate)
     );
 
-    // REMOVE DUPLICATES
-    const seen = new Set();
+    // REMOVE OLD NEWS (>24H)
+    items = items.filter(item=>{
 
-    let html = "";
+      const diff =
+        (new Date() - new Date(item.pubDate))
+        / 1000 / 60 / 60;
 
-    items.slice(0,40).forEach((item,index)=>{
-
-      const title =
-        cleanTitle(item.title);
-
-      const key =
-        title.toLowerCase().trim();
-
-      if(seen.has(key)){
-        return;
-      }
-
-      seen.add(key);
-
-      html += `
-
-        <article class="card">
-
-          <div class="badge ${
-            index < 5
-            ? 'breaking'
-            : ''
-          }">
-
-            ${
-              index < 5
-              ? 'BREAKING'
-              : 'MARKET UPDATE'
-            }
-
-          </div>
-
-          <a
-            href="${item.link}"
-            target="_blank"
-            class="headline-link"
-          >
-
-            <h2>
-              ${title}
-            </h2>
-
-            <div class="publisher">
-              - ${getSourceName(item.title)}
-            </div>
-
-          </a>
-
-          <div class="meta">
-            ${formatTime(item.pubDate)}
-          </div>
-
-        </article>
-
-      `;
+      return diff <= 24;
 
     });
 
-    document.getElementById("news").innerHTML =
-      html;
+    // REMOVE DUPLICATES
+    const unique = [];
 
-    document.getElementById("status").innerHTML =
-      "Showing latest trader-critical news";
+    const seen = new Set();
+
+    items.forEach(item=>{
+
+      const title =
+        cleanTitle(item.title)
+        .toLowerCase()
+        .trim();
+
+      if(!seen.has(title)){
+
+        seen.add(title);
+
+        unique.push(item);
+
+      }
+
+    });
+
+    renderNews(unique.slice(0,100));
 
   }catch(error){
 
     console.error(error);
 
-    document.getElementById("status").innerHTML =
-      "Failed to fetch trader news.";
-
   }
 
 }
+
+function renderNews(news){
+
+  const container =
+    document.getElementById("news");
+
+  let html = "";
+
+  news.forEach((item,index)=>{
+
+    const title =
+      cleanTitle(item.title);
+
+    const time =
+      formatTime(item.pubDate);
+
+    // SKIP OLD NEWS
+    if(!time) return;
+
+    html += `
+
+      <article class="card">
+
+        <div class="badge">
+
+          ${
+            index < 5
+            ? 'BREAKING'
+            : 'LIVE UPDATE'
+          }
+
+        </div>
+
+        <a
+          href="${item.link}"
+          target="_blank"
+          class="headline-link"
+        >
+
+          <h2>
+            ${title}
+          </h2>
+
+          <div class="publisher">
+            - ${getSourceName(item.title)}
+          </div>
+
+        </a>
+
+        <div class="meta">
+          ${time}
+        </div>
+
+      </article>
+
+    `;
+
+  });
+
+  container.innerHTML = html;
+
+}
+
+// INITIAL LOAD
+fetchNews();
+
+// AUTO REFRESH EVERY 10 SECONDS
+setInterval(fetchNews,10000);
 
 </script>
 
